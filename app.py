@@ -5,9 +5,10 @@ from processor import load_sklearn_data, load_csv, identify_task, find_target_he
 from cleaner import clean_data
 from visuals import get_classification_charts, get_regression_charts
 
+# Basic Streamlit page configuration
 st.set_page_config(page_title="Data Dashboard", layout="wide")
 
-# --- SESSION STATE ---
+# Initialize session state variables if they don't exist
 if 'raw_data' not in st.session_state:
     st.session_state.raw_data = None
 if 'clean_data' not in st.session_state:
@@ -17,16 +18,18 @@ if 'target_col' not in st.session_state:
 if 'task_type' not in st.session_state:
     st.session_state.task_type = None
 
+# Reset application state function
 def reset_app():
     st.session_state.raw_data = None
     st.session_state.clean_data = None
 
 st.title("Automated Data Processor and Dashboard")
 
-# --- SIDEBAR: DATA IMPORT ---
+# Create sidebar for data source selection
 st.sidebar.header("Data Source")
 source = st.sidebar.radio("Choose Source", ["Scikit-Learn", "Upload CSV"], on_change=reset_app)
 
+# Load data from Scikit-Learn or Uploaded CSV
 if source == "Scikit-Learn":
     ds_choice = st.sidebar.selectbox("Select Dataset", ["iris", "wine", "breast_cancer", "diabetes"])
     if st.sidebar.button("Load Dataset"):
@@ -40,21 +43,21 @@ else:
         except Exception as e:
             st.error(f"Error: {e}")
 
-# --- MAIN LOGIC ---
+# Process and display dashboard if data is loaded
 if st.session_state.raw_data is not None:
     df = st.session_state.raw_data
     
-    # Grid for metrics
+    # Grid for displaying data metrics
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
     col_m1.metric("Rows", df.shape[0])
     col_m2.metric("Features", df.shape[1])
     col_m3.metric("Numeric Cols", len(df.select_dtypes(include=[np.number]).columns))
     col_m4.metric("Null Values", df.isnull().sum().sum())
 
-    # Tabs for navigation
+    # Define navigation tabs
     tabs = st.tabs(["Summary", "Cleaning", "Visualizations", "Data View"])
 
-    # TAB 1: SUMMARY
+    # Summary Tab: Show data preview and statistics
     with tabs[0]:
         st.subheader("Data Summary")
         
@@ -72,7 +75,7 @@ if st.session_state.raw_data is not None:
         with st.expander("Descriptive Statistics"):
             st.dataframe(df.describe(), use_container_width=True)
 
-    # TAB 2: CLEANING
+    # Cleaning Tab: User configuration for data cleaning
     with tabs[1]:
         st.subheader("Cleaning Pipeline")
         
@@ -81,6 +84,7 @@ if st.session_state.raw_data is not None:
         task_type = identify_task(df, target_col)
         st.info(f"Task Identified: {task_type}")
 
+        # Configuration dictionary for cleaning steps
         config = {'missing_actions': {}, 'type_changes': {}, 'drop_duplicates': False, 'remove_outliers': False}
         
         st.write("Step 1: Type Conversion")
@@ -104,6 +108,7 @@ if st.session_state.raw_data is not None:
         if task_type == "Regression":
             config['remove_outliers'] = st.checkbox("Remove Outliers (3 Standard Deviations)")
 
+        # Run cleaning logic on button click
         if st.button("Apply Cleaning"):
             cleaned_df, changes = clean_data(df, config)
             st.session_state.clean_data = cleaned_df
@@ -114,14 +119,14 @@ if st.session_state.raw_data is not None:
                 st.write(f"- {ch}")
             st.success("Cleaning applied successfully.")
 
-    # TAB 3: VISUALIZATIONS
+    # Visualizations Tab: Show interactive charts
     with tabs[2]:
         if st.session_state.clean_data is None:
             st.warning("Please apply cleaning first.")
         else:
             clean_df = st.session_state.clean_data
             
-            # Sidebar Filter Slicing
+            # Sidebar Filter Slicing for visualizations
             st.sidebar.write("Data Filters")
             filtered_df = clean_df.copy()
             numeric_cols = clean_df.select_dtypes(include=['number']).columns
@@ -137,7 +142,7 @@ if st.session_state.raw_data is not None:
             else:
                 charts = get_regression_charts(filtered_df, st.session_state.target_col)
             
-            # Grid display for 4 charts
+            # Layout the charts in a 2x2 grid
             for i in range(0, len(charts), 2):
                 col1, col2 = st.columns(2)
                 with col1:
@@ -146,7 +151,7 @@ if st.session_state.raw_data is not None:
                     with col2:
                         st.plotly_chart(charts[i+1], use_container_width=True)
 
-    # TAB 4: DATA VIEW
+    # Data View Tab: Preview and download processed data
     with tabs[3]:
         st.subheader("Processed CSV File")
         if st.session_state.clean_data is not None:
