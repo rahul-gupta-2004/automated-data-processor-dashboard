@@ -1,0 +1,7 @@
+python3 -m venv app_cia3_venv
+
+source app_cia3_venv/bin/activate
+
+pip install ...
+
+deactivate

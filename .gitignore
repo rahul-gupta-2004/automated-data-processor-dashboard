@@ -1,0 +1,10 @@
+__pycache__/
+app_cia3_venv/
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv
+env
+.env
+.streamlit/
