@@ -1,6 +1,6 @@
 # Automated Data Processor and Dashboard
 
-Live Demo: [https://project-cia3.streamlit.app](https://project-cia3.streamlit.app)
+Live Demo: [https://project-cia3.streamlit.app](https://automated-data-dashboard.streamlit.app/)
 
 A comprehensive Streamlit-based application designed for data exploration, cleaning, and visualization. This tool simplifies the data preprocessing pipeline and provides interactive insights through automated task identification.
 
